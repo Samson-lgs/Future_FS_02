@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { LeadContext } from '../context/LeadContext';
-import { FiPlus, FiSearch, FiFilter, FiX } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import './LeadList.css';
 
 const LeadList = () => {

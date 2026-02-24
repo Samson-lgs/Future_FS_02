@@ -16,6 +16,7 @@ export const LeadProvider = ({ children }) => {
 
   useEffect(() => {
     fetchLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchLeads = async () => {
