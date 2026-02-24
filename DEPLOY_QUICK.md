@@ -18,9 +18,14 @@ Your MongoDB database is already set up! Just deploy frontend and backend.
    ```
    Name:          lead-crm-backend
    Runtime:       Node
+   Region:        (choose closest to you)
+   Branch:        main
+   Root Directory: (leave empty)
    Build Command: npm install
-   Start Command: npm start
+   Start Command: node server/server.js
    ```
+
+   ⚠️ **Important**: Make sure Start Command is exactly `node server/server.js`
 
 6. **Environment Variables** (Click "Advanced"):
    ```
@@ -33,6 +38,13 @@ Your MongoDB database is already set up! Just deploy frontend and backend.
 
 7. **Click "Create Web Service"**
 8. ⏳ Wait 3-5 minutes for deployment
+   
+   **While waiting, whitelist Render's IPs in MongoDB:**
+   - Go to MongoDB Atlas → Network Access
+   - Click "Add IP Address"
+   - Choose "Allow Access from Anywhere" → `0.0.0.0/0`
+   - Click "Confirm"
+   
 9. **Copy your URL**: `https://lead-crm-backend-XXXX.onrender.com`
 
 ---
@@ -117,17 +129,26 @@ Every time you `git push` to GitHub:
 
 ## 🆘 Troubleshooting
 
+**Error: "Cannot find module '/opt/render/project/src/start'"?**
+- Go to your Render service → Settings
+- Find "Start Command"
+- Change it to: `node server/server.js`
+- Click "Save Changes" (this will redeploy)
+
 **Can't connect to database?**
 - Check MongoDB Atlas Network Access
-- Ensure `0.0.0.0/0` is whitelisted
+- Add IP: `0.0.0.0/0` (allow from anywhere)
+- Click "Confirm"
 
 **Frontend not loading?**
 - Check Vercel deployment logs
 - Verify `REACT_APP_API_URL` is correct
+- Clear browser cache and reload
 
 **Backend error?**
-- Check Render logs
+- Check Render logs (Logs tab)
 - Verify all environment variables are set
+- Check that MONGODB_URI is complete (no extra spaces)
 
 ---
 
