@@ -8,7 +8,9 @@
     "dev": "nodemon server/server.js",
     "client": "npm start --prefix client",
     "dev:full": "concurrently \"npm run dev\" \"npm run client\"",
-    "install:all": "npm install && cd client && npm install"
+    "install:all": "npm install && cd client && npm install",
+    "build": "cd client && npm run build",
+    "heroku-postbuild": "npm run build"
   },
   "keywords": ["crm", "lead-management", "express", "mongodb", "react"],
   "author": "",

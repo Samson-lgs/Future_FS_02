@@ -1,0 +1,24 @@
+{
+  "name": "Lead CRM Backend",
+  "description": "Client Lead Management System API",
+  "repository": "https://github.com/Samson-lgs/Future_FS_02",
+  "keywords": ["nodejs", "express", "mongodb", "crm", "api"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB Atlas connection string",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT tokens",
+      "generator": "secret"
+    },
+    "CLIENT_URL": {
+      "description": "Frontend URL for CORS",
+      "required": true
+    }
+  }
+}
