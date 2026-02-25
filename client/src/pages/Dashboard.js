@@ -1,3 +1,4 @@
+// Dashboard v2 - Analytics Enhanced
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { LeadContext } from '../context/LeadContext';
