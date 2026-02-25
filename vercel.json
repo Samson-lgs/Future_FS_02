@@ -22,5 +22,10 @@
       "src": "/(.*)",
       "dest": "client/index.html"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "CI": "false"
+    }
+  }
 }
