@@ -41,4 +41,10 @@ export const leadAPI = {
   updateStatus: (id, status) => api.patch(`/leads/${id}/status`, { status })
 };
 
+// Analytics API
+export const analyticsAPI = {
+  getDashboard: () => api.get('/analytics/dashboard'),
+  exportCSV: () => api.get('/analytics/export', { responseType: 'blob' })
+};
+
 export default api;

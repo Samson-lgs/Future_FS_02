@@ -47,14 +47,32 @@ const leadSchema = new mongoose.Schema({
     enum: ['New', 'Contacted', 'Qualified', 'Converted', 'Lost'],
     default: 'New'
   },
+  priority: {
+    type: String,
+    enum: ['Low', 'Medium', 'High', 'Urgent'],
+    default: 'Medium'
+  },
   value: {
     type: Number,
     default: 0
   },
   notes: [noteSchema],
+  tags: [{
+    type: String,
+    trim: true
+  }],
   followUpDate: {
     type: Date
   },
+  lastContactedAt: {
+    type: Date
+  },
+  activityLog: [{
+    action: { type: String, required: true },
+    details: { type: String },
+    performedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    timestamp: { type: Date, default: Date.now }
+  }],
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

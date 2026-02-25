@@ -5,7 +5,7 @@ const Lead = require('../models/Lead');
 // @access  Private
 exports.getLeads = async (req, res) => {
   try {
-    const { status, source, search, sortBy } = req.query;
+    const { status, source, search, sortBy, priority, followUp } = req.query;
     
     // Build query
     let query = {};
@@ -17,12 +17,31 @@ exports.getLeads = async (req, res) => {
     if (source) {
       query.source = source;
     }
+
+    if (priority) {
+      query.priority = priority;
+    }
+
+    // Follow-up filter
+    if (followUp === 'overdue') {
+      query.followUpDate = { $lt: new Date() };
+      query.status = { $nin: ['Converted', 'Lost'] };
+    } else if (followUp === 'today') {
+      const start = new Date(); start.setHours(0,0,0,0);
+      const end = new Date(); end.setHours(23,59,59,999);
+      query.followUpDate = { $gte: start, $lte: end };
+    } else if (followUp === 'week') {
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      query.followUpDate = { $gte: new Date(), $lte: nextWeek };
+    }
     
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
-        { company: { $regex: search, $options: 'i' } }
+        { company: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -34,6 +53,14 @@ exports.getLeads = async (req, res) => {
       sortOptions = { createdAt: 1 };
     } else if (sortBy === 'name') {
       sortOptions = { name: 1 };
+    } else if (sortBy === 'value-high') {
+      sortOptions = { value: -1 };
+    } else if (sortBy === 'value-low') {
+      sortOptions = { value: 1 };
+    } else if (sortBy === 'priority') {
+      sortOptions = { priority: -1, updatedAt: -1 };
+    } else if (sortBy === 'followup') {
+      sortOptions = { followUpDate: 1 };
     } else {
       sortOptions = { updatedAt: -1 };
     }
@@ -84,7 +111,13 @@ exports.createLead = async (req, res) => {
   try {
     const leadData = {
       ...req.body,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      activityLog: [{
+        action: 'Lead Created',
+        details: `Lead "${req.body.name}" was created`,
+        performedBy: req.user._id,
+        timestamp: new Date()
+      }]
     };
 
     const lead = await Lead.create(leadData);
@@ -109,9 +142,30 @@ exports.updateLead = async (req, res) => {
       return res.status(404).json({ message: 'Lead not found' });
     }
 
+    // Log activity
+    const changes = [];
+    if (req.body.status && req.body.status !== lead.status) changes.push(`Status: ${lead.status} → ${req.body.status}`);
+    if (req.body.priority && req.body.priority !== lead.priority) changes.push(`Priority: ${lead.priority || 'Medium'} → ${req.body.priority}`);
+    if (req.body.name && req.body.name !== lead.name) changes.push(`Name updated`);
+
+    const updateData = { ...req.body };
+    if (changes.length > 0) {
+      updateData.$push = {
+        activityLog: {
+          action: 'Lead Updated',
+          details: changes.join(', '),
+          performedBy: req.user._id,
+          timestamp: new Date()
+        }
+      };
+    }
+    if (req.body.status === 'Contacted' && !lead.lastContactedAt) {
+      updateData.lastContactedAt = new Date();
+    }
+
     lead = await Lead.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true
@@ -189,9 +243,27 @@ exports.updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
+    const existingLead = await Lead.findById(req.params.id);
+    const oldStatus = existingLead ? existingLead.status : '';
+
+    const updateOps = { 
+      status,
+      $push: {
+        activityLog: {
+          action: 'Status Changed',
+          details: `${oldStatus} → ${status}`,
+          performedBy: req.user._id,
+          timestamp: new Date()
+        }
+      }
+    };
+    if (status === 'Contacted') {
+      updateOps.lastContactedAt = new Date();
+    }
+
     const lead = await Lead.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateOps,
       { new: true, runValidators: true }
     ).populate('assignedTo', 'name email')
      .populate('createdBy', 'name email');
